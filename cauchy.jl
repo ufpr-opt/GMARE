@@ -3,6 +3,7 @@
 include("plots.jl")
 include("aux.jl")
 
+#=
 function cauchy_method(G::Matrix, g::Vector, x₀::Vector)
   x = copy(x₀)
   d = -(G*x + g)
@@ -17,9 +18,11 @@ function cauchy_method(G::Matrix, g::Vector, x₀::Vector)
   end
   return x, iter
 end
+=#
 
 function cauchy_method(Λ::Vector, x₀::Vector; max_iter = 20)
   x = copy(x₀)
+  xpp = copy(x)
   iter = 0
   while norm(Λ.*x) > 1e-5
     d = -Λ.*x
@@ -31,11 +34,11 @@ function cauchy_method(Λ::Vector, x₀::Vector; max_iter = 20)
     end
     if iter >= 2
       fname = "cauchy-$(getname(iter, max_iter))"
-      plot_g(Λ, x₀, x₁, x, 1/λ, filename=fname)
-      copy!(x₀, x₁)
-      copy!(x₁, x)
+      plot_g(Λ, xpp, xp, x, 1/λ, filename=fname)
+      copy!(xpp, xp)
+      copy!(xp, x)
     else
-      x₁ = copy(x)
+      xp = copy(x)
     end
   end
   return x, iter

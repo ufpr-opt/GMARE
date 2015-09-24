@@ -3,15 +3,15 @@
 include("plots.jl")
 include("aux.jl")
 
-function short_step_method(Λ::Vector, x₀::Vector; max_iter=20)
+function short_step_method(Λ::Vector, x₀::Vector;
+    max_iter=20, Ki = 10, Ks = 2, Kc = 8)
   x = copy(x₀)
-  Ks = 2
-  Kc = 8
+  xpp = copy(x)
   iter = 0
   first_sstep = false
   while norm(Λ.*x) > 1e-5
     d = -Λ.*x
-    if iter%(Ks+Kc) < Kc
+    if iter < Ki || (iter-Ki)%(Ks+Kc) >= Ks
       # Cauchy step
       λ = dot(d,d)/dot(d,Λ.*d)
       first_sstep = true
@@ -33,11 +33,11 @@ function short_step_method(Λ::Vector, x₀::Vector; max_iter=20)
     end
     if iter >= 2
       fname = "sstep-$(getname(iter, max_iter))"
-      plot_g(Λ, x₀, x₁, x, 1/λ, filename=fname)
-      copy!(x₀, x₁)
-      copy!(x₁, x)
+      plot_g(Λ, xpp, xp, x, 1/λ, filename=fname)
+      copy!(xpp, xp)
+      copy!(xp, x)
     else
-      x₁ = copy(x)
+      xp = copy(x)
     end
   end
   return x, iter
