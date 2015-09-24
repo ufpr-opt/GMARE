@@ -1,6 +1,7 @@
 # Cauchy method for quadratic functions
 
 include("plots.jl")
+include("aux.jl")
 
 function cauchy_method(G::Matrix, g::Vector, x₀::Vector)
   x = copy(x₀)
@@ -17,7 +18,7 @@ function cauchy_method(G::Matrix, g::Vector, x₀::Vector)
   return x, iter
 end
 
-function cauchy_method(Λ::Vector, x₀::Vector)
+function cauchy_method(Λ::Vector, x₀::Vector; max_iter = 20)
   x = copy(x₀)
   iter = 0
   while norm(Λ.*x) > 1e-5
@@ -25,11 +26,12 @@ function cauchy_method(Λ::Vector, x₀::Vector)
     λ = dot(d,d)/dot(d,Λ.*d)
     x = x + λ*d
     iter += 1
-    if iter > 20
+    if iter > max_iter
       break
     end
     if iter >= 2
-      plot_g(Λ, x₀, x₁, x, 1/λ, filename="cauchy-$(iter-2)-$(iter-1)-$(iter)")
+      fname = "cauchy-$(getname(iter, max_iter))"
+      plot_g(Λ, x₀, x₁, x, 1/λ, filename=fname)
       copy!(x₀, x₁)
       copy!(x₁, x)
     else

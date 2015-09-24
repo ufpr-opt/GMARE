@@ -1,8 +1,9 @@
 # Short step method for quadratic functions
 
 include("plots.jl")
+include("aux.jl")
 
-function short_step_method(Λ::Vector, x₀::Vector)
+function short_step_method(Λ::Vector, x₀::Vector; max_iter=20)
   x = copy(x₀)
   Ks = 2
   Kc = 8
@@ -27,11 +28,12 @@ function short_step_method(Λ::Vector, x₀::Vector)
     x = x + λ*d
 
     iter += 1
-    if iter > 20
+    if iter > max_iter
       break
     end
     if iter >= 2
-      plot_g(Λ, x₀, x₁, x, 1/λ, filename="sstep-$(iter-2)-$(iter-1)-$(iter)")
+      fname = "sstep-$(getname(iter, max_iter))"
+      plot_g(Λ, x₀, x₁, x, 1/λ, filename=fname)
       copy!(x₀, x₁)
       copy!(x₁, x)
     else

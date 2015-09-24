@@ -24,7 +24,7 @@ end
 =#
 
 function plot_g(Λ::Vector, x::Vector, y::Vector, z::Vector, μ::Real;
-    filename = "test1")
+    filename = "tmp")
   n = length(x)
   hold(false)
   semilogy(Λ, abs(Λ.*x), ":k")
