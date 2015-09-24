@@ -4,7 +4,7 @@ include("plots.jl")
 include("aux.jl")
 
 function short_step_method(Λ::Vector, x₀::Vector;
-    max_iter=20, Ki = 10, Ks = 2, Kc = 8)
+    max_iter=20, Ki = 10, Ks = 2, Kc = 8, S = 1e4)
   x = copy(x₀)
   xpp = copy(x)
   iter = 0
@@ -18,7 +18,6 @@ function short_step_method(Λ::Vector, x₀::Vector;
     else
       # Short step
       if first_sstep
-        S = 1e4
         x⁺ = x - S*Λ.*x
         g⁺ = Λ.*x⁺
         λ = dot(g⁺,g⁺)/dot(g⁺,Λ.*g⁺)
