@@ -3,23 +3,6 @@
 include("plots.jl")
 include("aux.jl")
 
-#=
-function cauchy_method(G::Matrix, g::Vector, x₀::Vector)
-  x = copy(x₀)
-  d = -(G*x + g)
-  iter = 0
-  while norm(d) > 1e-5
-    x = x + dot(d,d)*d/dot(d,G*d)
-    d = -(G*x + g)
-    iter += 1
-    if iter > 10000
-      break
-    end
-  end
-  return x, iter
-end
-=#
-
 function cauchy_method(Λ::Vector, x₀::Vector; max_iter = 20)
   x = copy(x₀)
   xpp = copy(x)
