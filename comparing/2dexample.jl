@@ -3,7 +3,7 @@ include("aux.jl")
 
 using Gadfly
 
-methods = [cauchy, barzilai_borwein]
+methods = [cauchy, barzilai_borwein, alternate_cauchy]
 
 σ = 0.1
 Λ = [σ;1.0]
