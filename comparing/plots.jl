@@ -5,8 +5,10 @@ using Winston
 using Formatting
 
 function plots()
-  methods = [cauchy, barzilai_borwein, alternate_cauchy, short_step,
-  alternate_short_step, dai_yuan]
+  methods = [barzilai_borwein, short_step, alternate_short_step,
+      dai_yuan, alternate_dai_yuan, conjugate_gradient]
+  #methods = [cauchy, barzilai_borwein, alternate_cauchy, alternate_short_step,
+      #dai_yuan, alternate_dai_yuan, conjugate_gradient]
   #methods = [cauchy, barzilai_borwein, alternate_cauchy, short_step,
   #    random_decrease, alternate_short_step]
   colors = ["black", "red", "blue"]
@@ -14,9 +16,9 @@ function plots()
 
   rnd_seed = 1
 
-  σ = 0.0001
-  n_values = [5 10 50 100 200 400 800]
-  #n_values = [100]
+  σ = 0.001
+  #n_values = [5 10 50 100 200 400 800]
+  n_values = [1000]
 
   for hist_nmv in [true, false]
     for n in n_values
@@ -30,10 +32,10 @@ function plots()
       g_plt = FramedPlot()
       for (i_mtd, mtd) in enumerate(methods)
         srand(rnd_seed)
-        if mtd == short_step || mtd == alternate_short_step
+        if mtd == short_step || mtd == alternate_short_step ||
+            mtd == alternate_dai_yuan
           x, iter, nMV, X = mtd(diagm(Λ), zeros(n), x₀, history=true,
-          max_iter=10*n, hist_nmv=hist_nmv, Ks = 2, Kc = 8,
-          Ki = 10)
+          max_iter=10*n, hist_nmv=hist_nmv)
         else
           x, iter, nMV, X = mtd(diagm(Λ), zeros(n), x₀, history=true, max_iter = 10*n)
         end
@@ -76,7 +78,6 @@ function plots()
       # Filename generation
       L = length(string(maximum(n_values)))
       number = format("{1:>0$(L)d}", n)
-      filename = "function-decrease"
       if hist_nmv
         filename = "nmv"
         #title("function value by number of Matrix-Vector mult")
@@ -84,7 +85,7 @@ function plots()
         filename = "iter"
         #title("function value by number of iterations")
       end
-      savefig(f_plt, "function-decreate-$filename-$number.png")
+      savefig(f_plt, "function-decrease-$filename-$number.png")
       savefig(g_plt, "gradient-$filename-$number.png")
     end
   end

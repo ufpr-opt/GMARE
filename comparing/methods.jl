@@ -77,6 +77,7 @@ function barzilai_borwein(G::Matrix, v::Vector, x₀::Vector;
   while norm(d) > tol
     Gd = G*d
     nMV += 1
+    #println("($λ,$(dot(d,d)/dot(d,G*d)))")
     x = x + λ*d
     d = d - λ*Gd
     λ = λ₊
@@ -310,6 +311,108 @@ function dai_yuan(G::Matrix, v::Vector, x₀::Vector;
     end
     x = x + λnow*d
     d = d - λnow*Gd
+    iter += 1
+    if history
+      X[:,iter+1] = x
+    end
+    if iter >= max_iter
+      break
+    end
+  end
+  if history
+    return x, iter, nMV, X[:,1:iter+1]
+  else
+    return x, iter, nMV
+  end
+end
+
+function alternate_dai_yuan(G::Matrix, v::Vector, x₀::Vector;
+    tol = 1e-6, max_iter = 10000, history = false, hist_nmv = true,
+    Ki = 8, Kc = 8, Kdy = 6)
+  x = copy(x₀)
+  d = -(G*x + v)
+  Gd = G*d
+  dot_dd = dot(d,d)
+  λ = dot_dd/dot(d,Gd)
+  λp = 0.0
+  x = x + λ*d
+  d = d - λ*Gd
+  nMV = 2
+  iter = 1
+  if history
+    X = zeros(length(x₀),10*max_iter+1)
+    X[:,1] = x₀
+    X[:,2] = x
+  end
+  λdy = 0.0
+  while norm(d) > tol
+    if iter < Ki || (iter-Ki)%(1+Kc) >= 1
+      # Cauchy step
+      Gd = G*d
+      nMV += 1
+      old_dot_dd = dot_dd
+      dot_dd = dot(d,d)
+      λp = λ
+      λ = dot_dd/dot(d,Gd)
+      first_sstep = true
+      x = x + λ*d
+      if history && hist_nmv
+        X[:,nMV] = x
+      end
+      d = d - λ*Gd
+    else
+      λdy = 2/(sqrt((1/λp-1/λ)^2 + 4*dot_dd/(λp^2*old_dot_dd)) + 1/λp + 1/λ)
+      for i = 1:Kdy
+        Gd = G*d
+        x = x + λdy*d
+        d = d - λdy*Gd
+        nMV += 1
+        if history && hist_nmv
+          X[:,nMV] = x
+        end
+      end
+    end
+    iter += 1
+    if history && !hist_nmv
+      X[:,iter+1] = x
+    end
+    if iter >= max_iter
+      break
+    end
+  end
+  if history
+    if hist_nmv
+      return x, iter, nMV, X[:,1:nMV]
+    else
+      return x, iter, nMV, X[:,1:iter+1]
+    end
+  else
+    return x, iter, nMV
+  end
+end
+
+function conjugate_gradient(G::Matrix, v::Vector, x₀::Vector;
+    tol = 1e-6, max_iter = 10000, history = false)
+  r = G*x₀ + v
+  x = copy(x₀)
+  if history
+    X = zeros(length(x₀), max_iter+1)
+    X[:,1] = x₀
+  end
+  p = -r
+  nMV = 1
+  iter = 0
+  dot_rr = dot(r,r)
+  while dot_rr > tol*tol
+    Gp = G*p
+    nMV += 1
+    α = dot_rr/dot(p,Gp)
+    x = x + α*p
+    r = r + α*Gp
+    dot_rrp = dot(r,r)
+    β = dot_rrp/dot_rr
+    dot_rr = dot_rrp
+    p = β*p - r
     iter += 1
     if history
       X[:,iter+1] = x
