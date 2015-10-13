@@ -6,6 +6,7 @@ using Gadfly
 function example2d()
   methods = [cauchy, barzilai_borwein, alternate_cauchy]
 
+  path = createpath("2d-examples")
   σ = 0.1
   Λ = [σ;1.0]
 
@@ -22,10 +23,10 @@ function example2d()
 
     N = 200
     t = linspace(-2.0,2.0,N);
-    p = plot(layer(z=(x,y)->0.5*x^2*Λ[1]+0.5*y^2*Λ[2], x=t, y=t,
+    p = Gadfly.plot(layer(z=(x,y)->0.5*x^2*Λ[1]+0.5*y^2*Λ[2], x=t, y=t,
     Geom.contour(levels=F)),
     layer(x=X[1,:], y=X[2,:], Geom.line))
-    draw(PDF("$mtd.pdf", 4inch, 3inch), p)
+    draw(PDF("$path/$mtd.pdf", 4inch, 3inch), p)
   end
 end
 

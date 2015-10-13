@@ -15,6 +15,7 @@ function plots()
   linekinds = ["solid", "dashed", "dotted"]
 
   rnd_seed = 1
+  path = createpath("convergence")
 
   σ = 0.001
   #n_values = [5 10 50 100 200 400 800]
@@ -85,8 +86,8 @@ function plots()
         filename = "iter"
         #title("function value by number of iterations")
       end
-      savefig(f_plt, "function-decrease-$filename-$number.png")
-      savefig(g_plt, "gradient-$filename-$number.png")
+      savefig(f_plt, "$path/function-decrease-$filename-$number.png")
+      savefig(g_plt, "$path/gradient-$filename-$number.png")
     end
   end
 end

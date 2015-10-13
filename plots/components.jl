@@ -13,13 +13,7 @@ function plot_components()
   colors = ["black", "red", "blue"]
   linekinds = ["solid", "dashed", "dotted"]
 
-  path="output/components"
-  if !ispath("output")
-    mkdir("output")
-  elseif ispath(path)
-    rm(path, recursive=true)
-  end
-  mkdir(path)
+  path = createpath("components")
   rnd_seed = 1
 
   tol = 1e-4

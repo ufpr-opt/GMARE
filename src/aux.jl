@@ -71,3 +71,15 @@ function exp_normal(a::Real, b::Real, n::Int; weigh_left::Bool = true)
   v = a + (b-a)*(v-minimum(v))/(maximum(v) - minimum(v))
   return sort(v)
 end
+
+function createpath(name)
+  dir = "output"
+  path = "$dir/$name"
+  if !ispath("output")
+    mkdir("output")
+  elseif ispath(path)
+    rm(path, recursive=true)
+  end
+  mkdir(path)
+  return path
+end
