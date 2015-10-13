@@ -1,6 +1,6 @@
 JULIA=julia
 
-FILES = $(shell ls plots)
+FILES = $(shell ls plots tables)
 
 all:
 	for file in $(FILES); do \

@@ -1,5 +1,5 @@
-include("methods.jl")
-include("aux.jl")
+include("../src/methods.jl")
+include("../src/aux.jl")
 
 methods = [cauchy, random_decrease, barzilai_borwein, alternate_cauchy, short_step]
 dims = [2 5 10 50 100 150 200]
