@@ -39,7 +39,7 @@ function plots()
         else
           x, iter, nMV, X = mtd(diagm(Λ), zeros(n), x₀, history=true, max_iter = 10*n)
         end
-        if i_mtd != 1
+        if mtd != cauchy
           if hist_nmv && nMV > M
             M = nMV
           elseif !hist_nmv && iter+1> M

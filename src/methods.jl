@@ -3,6 +3,7 @@ function cauchy(G::Matrix, v::Vector, x₀::Vector;
   x = copy(x₀)
   if history
     X = zeros(length(x₀),max_iter+1)
+    A = zeros(max_iter)
     X[:,1] = x₀
   end
   d = -(G*x + v)
@@ -17,13 +18,14 @@ function cauchy(G::Matrix, v::Vector, x₀::Vector;
     iter += 1
     if history
       X[:,iter+1] = x
+      A[iter] = λ
     end
     if iter >= max_iter
       break
     end
   end
   if history
-    return x, iter, nMV, X[:,1:iter+1]
+    return x, iter, nMV, X[:,1:iter+1], A[1:iter]
   else
     return x, iter, nMV
   end
@@ -36,6 +38,7 @@ function random_decrease(G::Matrix, v::Vector, x₀::Vector;
   x = copy(x₀)
   if history
     X = zeros(length(x₀),max_iter+1)
+    A = zeros(max_iter)
     X[:,1] = x₀
   end
   d = -(G*x + v)
@@ -50,13 +53,14 @@ function random_decrease(G::Matrix, v::Vector, x₀::Vector;
     iter += 1
     if history
       X[:,iter+1] = x
+      A[iter] = λ
     end
     if iter >= max_iter
       break
     end
   end
   if history
-    return x, iter, nMV, X[:,1:iter+1]
+    return x, iter, nMV, X[:,1:iter+1], A[1:iter]
   else
     return x, iter, nMV
   end
@@ -67,6 +71,7 @@ function barzilai_borwein(G::Matrix, v::Vector, x₀::Vector;
   x = copy(x₀)
   if history
     X = zeros(length(x₀),max_iter+1)
+    A = zeros(max_iter)
     X[:,1] = x₀
   end
   iter = 0
@@ -80,6 +85,9 @@ function barzilai_borwein(G::Matrix, v::Vector, x₀::Vector;
     #println("($λ,$(dot(d,d)/dot(d,G*d)))")
     x = x + λ*d
     d = d - λ*Gd
+    if history
+      A[iter+1] = λ
+    end
     λ = λ₊
     λ₊ = dot(d,d)/dot(d,G*d)
     iter +=1
@@ -91,7 +99,7 @@ function barzilai_borwein(G::Matrix, v::Vector, x₀::Vector;
     end
   end
   if history
-    return x, iter, nMV, X[:,1:iter+1]
+    return x, iter, nMV, X[:,1:iter+1], A[1:iter]
   else
     return x, iter, nMV
   end
@@ -102,6 +110,7 @@ function alternate_cauchy(G::Matrix, v::Vector, x₀::Vector;
   x = copy(x₀)
   if history
     X = zeros(length(x₀),max_iter+1)
+    A = zeros(max_iter)
     X[:,1] = x₀
   end
   d = -(G*x + v)
@@ -118,13 +127,14 @@ function alternate_cauchy(G::Matrix, v::Vector, x₀::Vector;
     iter += 1
     if history
       X[:,iter+1] = x
+      A[iter] = λ
     end
     if iter >= max_iter
       break
     end
   end
   if history
-    return x, iter, nMV, X[:,1:iter+1]
+    return x, iter, nMV, X[:,1:iter+1], A[1:iter]
   else
     return x, iter, nMV
   end
@@ -137,6 +147,7 @@ function short_step(G::Matrix, v::Vector, x₀::Vector;
   x = copy(x₀)
   if history
     X = zeros(length(x₀),2*max_iter+1)
+    A = zeros(2*max_iter)
     X[:,1] = x₀
   end
   iter = 0
@@ -154,6 +165,7 @@ function short_step(G::Matrix, v::Vector, x₀::Vector;
       x = x + λ*d
       if history && hist_nmv
         X[:,nMV] = x
+        A[nMV-1] = λ
       end
       d = d - λ*Gd
     else
@@ -169,6 +181,7 @@ function short_step(G::Matrix, v::Vector, x₀::Vector;
         if history && hist_nmv
           X[:,nMV-1] = x
           X[:,nMV] = x
+          A[nMV-1] = λ
         end
         d = d - λ*Gd
       end
@@ -178,6 +191,7 @@ function short_step(G::Matrix, v::Vector, x₀::Vector;
         nMV += 1
         if history && hist_nmv
           X[:,nMV] = x
+          A[nMV-1] = λ
         end
       end
     end
@@ -185,6 +199,7 @@ function short_step(G::Matrix, v::Vector, x₀::Vector;
     iter += 1
     if history && !hist_nmv
       X[:,iter+1] = x
+      A[iter] = λ
     end
     if iter >= max_iter
       break
@@ -192,9 +207,9 @@ function short_step(G::Matrix, v::Vector, x₀::Vector;
   end
   if history
     if hist_nmv
-      return x, iter, nMV, X[:,1:nMV]
+      return x, iter, nMV, X[:,1:nMV], A[1:nMV-1]
     else
-      return x, iter, nMV, X[:,1:iter+1]
+      return x, iter, nMV, X[:,1:iter+1], A[1:iter]
     end
   else
     return x, iter, nMV
@@ -207,6 +222,7 @@ function alternate_short_step(G::Matrix, v::Vector, x₀::Vector;
   x = copy(x₀)
   if history
     X = zeros(length(x₀),10*max_iter+1)
+    A = zeros(10*max_iter)
     X[:,1] = x₀
   end
   iter = 0
@@ -224,6 +240,7 @@ function alternate_short_step(G::Matrix, v::Vector, x₀::Vector;
       x = x + λ*d
       if history && hist_nmv
         X[:,nMV] = x
+        A[nMV-1] = λ
       end
       d = d - λ*Gd
       if iter >= Ki
@@ -232,30 +249,30 @@ function alternate_short_step(G::Matrix, v::Vector, x₀::Vector;
         nMV += 1
         if history && hist_nmv
           X[:,nMV] = x
+          A[nMV-1] = λs
         end
       end
     else
       # Short step
-      if first_sstep
-        Gd = G*d
-        nMV += 1
-        d⁺ = d - S*Gd
-        λs = dot(d⁺,d⁺)/dot(d⁺,G*d⁺)
-        nMV += 1
-        first_sstep = false
-        x = x + λs*d
-        if history && hist_nmv
-          X[:,nMV-1] = x
-          X[:,nMV] = x
-        end
-        d = d - λs*Gd
+      Gd = G*d
+      nMV += 1
+      d⁺ = d - S*Gd
+      λs = dot(d⁺,d⁺)/dot(d⁺,G*d⁺)
+      nMV += 1
+      x = x + λs*d
+      if history && hist_nmv
+        X[:,nMV-1] = x
+        X[:,nMV] = x
+        A[nMV-1] = λs
       end
+      d = d - λs*Gd
       for i = 2:Ks
         x = x + λs*d
         d = d - λs*G*d
         nMV += 1
         if history && hist_nmv
           X[:,nMV] = x
+          A[nMV-1] = λs
         end
       end
     end
@@ -263,6 +280,7 @@ function alternate_short_step(G::Matrix, v::Vector, x₀::Vector;
     iter += 1
     if history && !hist_nmv
       X[:,iter+1] = x
+      A[iter] = λ
     end
     if iter >= max_iter
       break
@@ -270,9 +288,9 @@ function alternate_short_step(G::Matrix, v::Vector, x₀::Vector;
   end
   if history
     if hist_nmv
-      return x, iter, nMV, X[:,1:nMV]
+      return x, iter, nMV, X[:,1:nMV], A[1:nMV-1]
     else
-      return x, iter, nMV, X[:,1:iter+1]
+      return x, iter, nMV, X[:,1:iter+1], A[1:iter]
     end
   else
     return x, iter, nMV
@@ -293,8 +311,10 @@ function dai_yuan(G::Matrix, v::Vector, x₀::Vector;
   iter = 1
   if history
     X = zeros(length(x₀),max_iter+1)
+    A = zeros(max_iter)
     X[:,1] = x₀
     X[:,2] = x
+    A[1] = λ
   end
   while norm(d) > tol
     Gd = G*d
@@ -314,13 +334,14 @@ function dai_yuan(G::Matrix, v::Vector, x₀::Vector;
     iter += 1
     if history
       X[:,iter+1] = x
+      A[iter] = λnow
     end
     if iter >= max_iter
       break
     end
   end
   if history
-    return x, iter, nMV, X[:,1:iter+1]
+    return x, iter, nMV, X[:,1:iter+1], A[1:iter]
   else
     return x, iter, nMV
   end
@@ -341,8 +362,10 @@ function alternate_dai_yuan(G::Matrix, v::Vector, x₀::Vector;
   iter = 1
   if history
     X = zeros(length(x₀),10*max_iter+1)
+    A = zeros(10*max_iter)
     X[:,1] = x₀
     X[:,2] = x
+    A[1] = λ
   end
   λdy = 0.0
   while norm(d) > tol
@@ -358,6 +381,7 @@ function alternate_dai_yuan(G::Matrix, v::Vector, x₀::Vector;
       x = x + λ*d
       if history && hist_nmv
         X[:,nMV] = x
+        A[nMV-1] = λ
       end
       d = d - λ*Gd
     else
@@ -369,12 +393,14 @@ function alternate_dai_yuan(G::Matrix, v::Vector, x₀::Vector;
         nMV += 1
         if history && hist_nmv
           X[:,nMV] = x
+          A[nMV-1] = λdy
         end
       end
     end
     iter += 1
     if history && !hist_nmv
       X[:,iter+1] = x
+      A[iter] = λ
     end
     if iter >= max_iter
       break
@@ -382,9 +408,9 @@ function alternate_dai_yuan(G::Matrix, v::Vector, x₀::Vector;
   end
   if history
     if hist_nmv
-      return x, iter, nMV, X[:,1:nMV]
+      return x, iter, nMV, X[:,1:nMV], A[1:nMV-1]
     else
-      return x, iter, nMV, X[:,1:iter+1]
+      return x, iter, nMV, X[:,1:iter+1], A[1:iter]
     end
   else
     return x, iter, nMV
@@ -397,6 +423,7 @@ function conjugate_gradient(G::Matrix, v::Vector, x₀::Vector;
   x = copy(x₀)
   if history
     X = zeros(length(x₀), max_iter+1)
+    A = zeros(max_iter)
     X[:,1] = x₀
   end
   p = -r
@@ -422,7 +449,7 @@ function conjugate_gradient(G::Matrix, v::Vector, x₀::Vector;
     end
   end
   if history
-    return x, iter, nMV, X[:,1:iter+1]
+    return x, iter, nMV, X[:,1:iter+1], A[1:iter]
   else
     return x, iter, nMV
   end
