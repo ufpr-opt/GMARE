@@ -1,5 +1,5 @@
-include("methods.jl")
-include("aux.jl")
+include("../src/methods.jl")
+include("../src/aux.jl")
 
 using Winston
 using Formatting

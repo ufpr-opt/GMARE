@@ -1,6 +1,6 @@
 using Formatting
 
-function print_table(title, rowlabel::String, rowvalues, collabel::String, colvalues, table)
+function print_table(title, rowlabel, rowvalues, collabel, colvalues, table)
   (m,n) = size(table)
   max_len_col(col) = maximum(map(x->length(string(x)),col))
   str_table = fill("", m+2,n+2)
@@ -43,4 +43,31 @@ function print_table(title, rowlabel::String, rowvalues, collabel::String, colva
   bar = [join(fill("-",length(str_table[2,j]))) for j = 1:n+2]
   println(join(bar,"-|-"))
   println(join([join(str_table[i,:]," | ") for i=3:m+2],'\n'))
+end
+
+function getname(i::Int, N::Int)
+  s = length(string(N)) # or floor(Int, log10(N))
+  return format("{1:0$(s)d}-{2:0$(s)d}-{3:0$(s)d}", i-2, i-1, i)
+end
+
+function uniform(a::Real, b::Real, n::Int)
+  v = rand(n)
+  v = a + (b-a)*(v-minimum(v))/(maximum(v) - minimum(v))
+  return sort(v)
+end
+
+function normal(a::Real, b::Real, n::Int)
+  v = randn(n)
+  v = a + (b-a)*(v-minimum(v))/(maximum(v) - minimum(v))
+  return sort(v)
+end
+
+function exp_normal(a::Real, b::Real, n::Int; weigh_left::Bool = true)
+  if weigh_left
+    v = exp(randn(n))
+  else
+    v = -exp(randn(n))
+  end
+  v = a + (b-a)*(v-minimum(v))/(maximum(v) - minimum(v))
+  return sort(v)
 end
