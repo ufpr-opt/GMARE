@@ -1,7 +1,7 @@
 JULIA=julia
 
-FILES = $(shell ls plots tables)
+FILES = $(shell find plots tables)
 
 all:
 	for file in $(FILES); do \
-		$(JULIA) plots/$$file; done
+		$(JULIA) $$file; done
