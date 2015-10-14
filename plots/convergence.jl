@@ -9,8 +9,7 @@ function plots()
       dai_yuan, alternate_dai_yuan, conjugate_gradient]
   #methods = [cauchy, barzilai_borwein, alternate_cauchy, alternate_short_step,
       #dai_yuan, alternate_dai_yuan, conjugate_gradient]
-  #methods = [cauchy, barzilai_borwein, alternate_cauchy, short_step,
-  #    random_decrease, alternate_short_step]
+  #methods = [barzilai_borwein, alternate_short_step, short_step]
   colors = ["black", "red", "blue"]
   linekinds = ["solid", "dashed", "dotted"]
 
@@ -18,16 +17,18 @@ function plots()
   path = createpath("convergence")
 
   σ = 0.001
-  #n_values = [5 10 50 100 200 400 800]
+  #n_values = [10 100 1000]
   n_values = [1000]
+  tol = 5e-5
 
-  for hist_nmv in [true, false]
+  #for hist_nmv in [true, false]
+  for hist_nmv in true
     for n in n_values
       Λ = linspace(σ, 1.0, n)
 
       x₀ = ones(n)./sqrt(Λ)
 
-      M = 0
+      M = 300
       hold(false)
       f_plt = FramedPlot()
       g_plt = FramedPlot()
@@ -36,9 +37,10 @@ function plots()
         if mtd == short_step || mtd == alternate_short_step ||
             mtd == alternate_dai_yuan
           x, iter, nMV, X = mtd(diagm(Λ), zeros(n), x₀, history=true,
-          max_iter=10*n, hist_nmv=hist_nmv)
+          max_iter=10*n, hist_nmv=hist_nmv, tol=tol)
         else
-          x, iter, nMV, X = mtd(diagm(Λ), zeros(n), x₀, history=true, max_iter = 10*n)
+          x, iter, nMV, X = mtd(diagm(Λ), zeros(n), x₀, history=true, max_iter =
+          10*n, tol=tol)
         end
         if mtd != cauchy
           if hist_nmv && nMV > M
@@ -86,8 +88,10 @@ function plots()
         filename = "iter"
         #title("function value by number of iterations")
       end
-      savefig(f_plt, "$path/function-decrease-$filename-$number.png")
-      savefig(g_plt, "$path/gradient-$filename-$number.png")
+      savefig(f_plt, "$path/function-decrease-$filename-$number.png", "width",
+      800, "height", 600)
+      savefig(g_plt, "$path/gradient-$filename-$number.png", "width", 800,
+      "height", 600)
     end
   end
 end

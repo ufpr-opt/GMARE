@@ -76,12 +76,11 @@ function barzilai_borwein(G::Matrix, v::Vector, x₀::Vector;
   end
   iter = 0
   d = -(G*x + v)
-  nMV = 1
-  λ = dot(d,d)/dot(d,G*d)
+  Gd = G*d
+  λ = dot(d,d)/dot(d,Gd)
+  nMV = 2
   λ₊ = λ
   while norm(d) > tol
-    Gd = G*d
-    nMV += 1
     #println("($λ,$(dot(d,d)/dot(d,G*d)))")
     x = x + λ*d
     d = d - λ*Gd
@@ -89,7 +88,9 @@ function barzilai_borwein(G::Matrix, v::Vector, x₀::Vector;
       A[iter+1] = λ
     end
     λ = λ₊
-    λ₊ = dot(d,d)/dot(d,G*d)
+    Gd = G*d
+    nMV += 1
+    λ₊ = dot(d,d)/dot(d,Gd)
     iter +=1
     if history
       X[:,iter+1] = x
@@ -142,7 +143,7 @@ end
 
 
 function short_step(G::Matrix, v::Vector, x₀::Vector;
-    tol = 1e-6, max_iter=10000, Ki = 10, Ks = 2, Kc = 8, S = 1e4,
+    tol = 1e-6, max_iter=10000, Ki = 10, Ks = 2, Kc = 6,
     history = false, hist_nmv = true)
   x = copy(x₀)
   if history
@@ -161,6 +162,7 @@ function short_step(G::Matrix, v::Vector, x₀::Vector;
       Gd = G*d
       nMV += 1
       λ = dot(d,d)/dot(d,Gd)
+      λ *= 0.8 + rand()*0.4
       first_sstep = true
       x = x + λ*d
       if history && hist_nmv
@@ -173,7 +175,8 @@ function short_step(G::Matrix, v::Vector, x₀::Vector;
       if first_sstep
         Gd = G*d
         nMV += 1
-        d⁺ = d - S*Gd
+        # S is infinite
+        d⁺ = -Gd
         λ = dot(d⁺,d⁺)/dot(d⁺,G*d⁺)
         nMV += 1
         first_sstep = false
@@ -217,7 +220,7 @@ function short_step(G::Matrix, v::Vector, x₀::Vector;
 end
 
 function alternate_short_step(G::Matrix, v::Vector, x₀::Vector;
-    tol = 1e-6, max_iter=10000, Ki = 10, Ks = 2, Kc = 8, S = 1e4,
+    tol = 1e-6, max_iter=10000, Ki = 10, Ks = 2, Kc = 6,
     history = false, hist_nmv = true)
   x = copy(x₀)
   if history
@@ -236,6 +239,7 @@ function alternate_short_step(G::Matrix, v::Vector, x₀::Vector;
       Gd = G*d
       nMV += 1
       λ = dot(d,d)/dot(d,Gd)
+      λ *= 0.8 + rand()*0.4
       first_sstep = true
       x = x + λ*d
       if history && hist_nmv
@@ -256,7 +260,8 @@ function alternate_short_step(G::Matrix, v::Vector, x₀::Vector;
       # Short step
       Gd = G*d
       nMV += 1
-      d⁺ = d - S*Gd
+      # S is infinite
+      d⁺ = -Gd;
       λs = dot(d⁺,d⁺)/dot(d⁺,G*d⁺)
       nMV += 1
       x = x + λs*d

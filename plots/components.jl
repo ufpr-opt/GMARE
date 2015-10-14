@@ -18,8 +18,7 @@ function plot_components()
 
   tol = 1e-4
   σ = 0.01
-  #n_values = [5 10 50 100 200 400 800]
-  n_values = [50]
+  n_values = [50 100 500]
   L = maximum(n_values)
 
   for hist_nmv in [true, false]

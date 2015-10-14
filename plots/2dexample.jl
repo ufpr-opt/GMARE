@@ -4,7 +4,8 @@ include("../src/aux.jl")
 using Gadfly
 
 function example2d()
-  methods = [cauchy, barzilai_borwein, alternate_cauchy]
+  methods = [cauchy, barzilai_borwein, alternate_cauchy, dai_yuan,
+      conjugate_gradient]
 
   path = createpath("2d-examples")
   σ = 0.1
