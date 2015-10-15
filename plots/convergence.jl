@@ -8,7 +8,8 @@ function plots()
   #methods = [barzilai_borwein, short_step, alternate_short_step,
       #dai_yuan, alternate_dai_yuan, conjugate_gradient,
       #coord_cauchy]
-  methods = [coord_cauchy, coord_cauchy_rand]
+  methods = [cauchy, barzilai_borwein]
+  #methods = [coord_cauchy, coord_cauchy_rand]
   #methods = [cauchy, barzilai_borwein, alternate_cauchy, alternate_short_step,
       #dai_yuan, alternate_dai_yuan, conjugate_gradient]
   #methods = [barzilai_borwein, alternate_short_step, short_step]
@@ -23,14 +24,14 @@ function plots()
   σ = 0.001
   #n_values = [10 100 1000]
   n_values = [1000]
-  tol = 5e-5
+  tol = 1e-6
 
   #for hist_nmv in [true, false]
   for hist_nmv in true
     for n in n_values
       Λ = linspace(σ, 1.0, n)
       (Q,R) = qr(rand(n,n), thin=false)
-      H = Q*diagm(Λ)*Q'
+      H = diagm(Λ)
 
       x₀ = ones(n)./sqrt(Λ)
 

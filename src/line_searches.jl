@@ -16,15 +16,32 @@ function armijo(f::Function, x::Vector, fx::Real, d::Vector;
 end
 
 function golden_search(f::Function, x::Vector, fx::Real, v::Vector;
-    tol = 1e-4)
+    tol = 1e-3)
   ϕ(t) = f(x + t*v)
-  (a, b) = (0,1)
   g = 1/golden
-  c, d = b - g*(b-a), a + g*(b-a)
-  rnd(x) = round(x,2)
-  ϕa = fx; ϕb = ϕ(b)
-  ϕc = ϕ(c); ϕd = ϕ(d)
-  nf = 2
+
+  (a, b) = (0, 1)
+  ϕa, ϕb = (fx, ϕ(b))
+  if ϕb >= ϕa
+    c, d = b - g*(b-a), a + g*(b-a)
+    ϕc = ϕ(c); ϕd = ϕ(d)
+    nf = 2
+  else
+    d, b = b, golden
+    ϕd, ϕb = ϕb, ϕ(d)
+    nf = 1
+    while ϕb < ϕd
+      a, d, b = d, b, golden*b
+      ϕa, ϕd, ϕb = ϕd, ϕb, ϕ(b)
+      nf += 1
+      if b > 1e6
+        error("Golden search failed")
+      end
+    end
+    c = b - g*(b-a)
+    ϕc = ϕ(c)
+    nf += 1
+  end
   while abs(c-d) > tol
     if ϕc < ϕd
       b, d = d, c
