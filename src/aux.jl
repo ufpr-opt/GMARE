@@ -83,3 +83,18 @@ function createpath(name)
   mkdir(path)
   return path
 end
+
+function rowdot(A::Matrix, row::Int, x::Vector)
+  (m,n) = size(A)
+  if n != length(x)
+    error("size(A,2) != length(x)")
+  end
+  if row < 0 || row > m
+    error("1 ≦ row ≦ size(A,1)")
+  end
+  s = 0.0
+  for j = 1:n
+    @inbounds s += A[row,j]*x[j]
+  end
+  return s
+end

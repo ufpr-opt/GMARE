@@ -5,13 +5,17 @@ using Winston
 using Formatting
 
 function plots()
-  methods = [barzilai_borwein, short_step, alternate_short_step,
-      dai_yuan, alternate_dai_yuan, conjugate_gradient]
+  #methods = [barzilai_borwein, short_step, alternate_short_step,
+      #dai_yuan, alternate_dai_yuan, conjugate_gradient,
+      #coord_cauchy]
+  methods = [coord_cauchy, coord_cauchy_rand]
   #methods = [cauchy, barzilai_borwein, alternate_cauchy, alternate_short_step,
       #dai_yuan, alternate_dai_yuan, conjugate_gradient]
   #methods = [barzilai_borwein, alternate_short_step, short_step]
   colors = ["black", "red", "blue"]
   linekinds = ["solid", "dashed", "dotted"]
+  width = 800
+  height = 600
 
   rnd_seed = 1
   path = createpath("convergence")
@@ -25,6 +29,8 @@ function plots()
   for hist_nmv in true
     for n in n_values
       Λ = linspace(σ, 1.0, n)
+      (Q,R) = qr(rand(n,n), thin=false)
+      H = Q*diagm(Λ)*Q'
 
       x₀ = ones(n)./sqrt(Λ)
 
@@ -36,10 +42,10 @@ function plots()
         srand(rnd_seed)
         if mtd == short_step || mtd == alternate_short_step ||
             mtd == alternate_dai_yuan
-          x, iter, nMV, X = mtd(diagm(Λ), zeros(n), x₀, history=true,
+          x, iter, nMV, X = mtd(H, zeros(n), x₀, history=true,
           max_iter=10*n, hist_nmv=hist_nmv, tol=tol)
         else
-          x, iter, nMV, X = mtd(diagm(Λ), zeros(n), x₀, history=true, max_iter =
+          x, iter, nMV, X = mtd(H, zeros(n), x₀, history=true, max_iter =
           10*n, tol=tol)
         end
         if mtd != cauchy
@@ -89,9 +95,9 @@ function plots()
         #title("function value by number of iterations")
       end
       savefig(f_plt, "$path/function-decrease-$filename-$number.png", "width",
-      800, "height", 600)
-      savefig(g_plt, "$path/gradient-$filename-$number.png", "width", 800,
-      "height", 600)
+      width, "height", height)
+      savefig(g_plt, "$path/gradient-$filename-$number.png", "width", width,
+      "height", height)
     end
   end
 end
